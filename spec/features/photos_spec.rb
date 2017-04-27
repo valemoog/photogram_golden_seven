@@ -289,21 +289,21 @@ end
 
 feature "Edit photo form" do
   it "has caption prepopulated", points: 3, hint: h("value_attribute") do
-    photo = create(:photo, caption: "Old caption")
+    photo = create(:photo, caption: "Some pre-existing caption")
 
     visit "/photos/#{photo.id}/edit"
 
-    expect(page).to have_css("input[value='Old caption']")
+    expect(page).to have_css("input[value='Some pre-existing caption']")
   end
 end
 
 feature "Edit photo form" do
   it "has image source prepopulated", points: 3, hint: h("value_attribute") do
-    photo = create(:photo, source: "http://old.image/source.jpg")
+    photo = create(:photo, source: "http://some.pre-existing.image/source.jpg")
 
     visit "/photos/#{photo.id}/edit"
 
-    expect(page).to have_css("input[value='http://old.image/source.jpg']")
+    expect(page).to have_css("input[value='http://some.pre-existing.image/source.jpg']")
   end
 end
 
