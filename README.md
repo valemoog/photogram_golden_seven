@@ -1,6 +1,64 @@
 # Photogram Golden Seven
 
-## Standard Workflow
+## RCAV + CRUD
+
+The goal of this project is to understand how to allow users to generate data for our database tables through their browsers. To do this, you will write one complete database-backed web CRUD **resource**. When we say "resource", we mean:
+
+ - a database table
+ - a Ruby class to represent it (called a "model")
+ - the complete set of RCAVs that are required for users to interact with it through their browsers
+
+To start with, we'll keep it simple and manage just one resource: photos. Our goal is to build an app that lets users submit URLs of photos and add captions for them, like this:
+
+### [This is the target you should aim to build.](https://photogram-golden-seven-target.herokuapp.com/)
+
+Eventually, we'll add the ability to sign up, upload photos, and follow other users, and we'll wind up building Instagram. But for now, anonymous visitors will simply copy-paste the URLs of images that are already on the Internet.
+
+**We just need to put together everything we've learned about RCAV with everything we've learned about CRUDing models with Ruby.**
+
+Web applications are not much more than a collection of related resources that users can CRUD, so understanding how each of these operations works on one table is essential. **CRUD resources are the legos that the web is built out of.**
+
+At the most basic level, our job when building web apps is to build support for **addresses** that users can visit that, when visited, **trigger controller actions** which perform the interaction that the user wants.
+
+Then we need to give the users a convenient way to visit that URL (there's only two ways: either a link or a form submit button which point to that URL).
+
+## Identify the interface
+
+Go click around the target and try to identify all of the URLs that exist in it. Remember from `omnicalc_params` that every form involves two RCAVs: one to display the form, and a second to process the inputs. You might have to View Source to get all of the URLs.
+
+**For a standard CRUD resource**, we usually support seven actions. **The Golden Seven** actions are:
+
+### Create
+
+ - `"/photos/new"`: displays a blank form to the user
+ - `"/create_photo"`: receives info from the new form and inserts a row into the table
+
+### Read
+
+ - `"/photos"`: displays a list of multiple rows
+ - `"/photos/4"`: displays the details of one row
+
+### Update
+
+ - `"/photos/4/edit"`: displays a pre-populated form to the user with existing data
+ - `"/update_photo/4"`: receives info from the edit form and updates a row in the table
+
+### Delete
+
+ - `"/delete_photo/4"`: removes a row from the table
+
+Now that we've identified the entire interface of the application, we can get started building it!
+
+## Setup
+
+ 1. Fork this repository.
+ 1. Clone your fork.
+ 1. `cd` in to the application's root folder.
+ 1. `bundle install`
+ 1. `rails server`
+ 1. Open up the code in Atom.
+
+### Standard Workflow
 
  1. Fork to your own account.
  1. Clone to your computer.
@@ -10,86 +68,97 @@
  1. In the GitHub Desktop app, create a commit. You *must* type a "summary"; "description" is optional.
  1. Click Publish. Verify that your branch is now visible on your fork at GitHub.com in the "Branch" dropdown.
  1. **Commit and Sync often as you work.**
- 1. Make new branches freely to experiment. You can always switch back to an older branch and start over. **When in doubt, create a branch**, _especially_ before starting on a new task.
- 1. You don't need to merge back into your master branch; just stay on whatever your best branch is, in the end. (In the real world, you would ultimately merge your best branch back into your master branch and deploy to your users.)
+ 1. Make new branches freely to experiment! You can always switch back to an older branch using the dropdown in the Desktop App, and all of your files will instantly snap back to their older state. **So, when in doubt, create a branch**, _especially_ before starting on a new task.
+ 1. You don't need to merge back into your master branch; in the end, just stay on whatever your best branch is. (In the real world, you would ultimately merge your best branch back into your master branch and deploy it to your production server.)
  1. Run `rails grade` as often as you like to see how you are doing.
  1. You can push commits and `rails grade` right up until the due date.
  1. If you have a question about your code, a great way to get feedback is to open a [Pull Request](https://help.github.com/articles/creating-a-pull-request/). After creating it, if you include the URL of your Pull Request when you post your question, reviewers will be able to easily see the changes you've made and leave comments on each line of your code with suggestions.
 
-## Project Specific Instructions
+## Generate the database table
 
-# RCAV + CRUD
+(Your [CRUD with Ruby guide](https://guides.firstdraft.com/crud-with-ruby.html) will be handy for all CRUD-related portions of this project.)
 
-## Introduction
+First, we need an underlying database table to store photos. Lets use a Rails generator to help us write the code to get one:
 
-The goal of this project is to understand how to allow users to generate data for our database tables through their browsers. To do this, you will write one complete database-backed web CRUD resource.
+```bash
+rails generate model photo caption:text source:string
+```
 
-We just need to put together everything we've learned about RCAV with everything we've learned about CRUDing models with Ruby.
+This is a command line command, not a Ruby expression, so don't attempt to execute it within `rails console`. Run it at a command prompt.
 
-Every web application is nothing more than a collection of related resources that users can CRUD, so understanding how each of these operations works on one table is essential. For example, Twitter allows a user to
+This command will generate two files:
 
- - sign up (**create** a row in the users table)
- - edit profile (**update** his or her row in the users table)
- - tweet (**create** a row in the statuses table)
- - delete a tweet (**destroy** that row in the statuses table)
- - I believe Twitter doesn't allow you to edit a tweet, so they don't support a route to trigger an **update** action for a row in the statuses table
- - follow/unfollow other users (**create** / **destroy** a row in the followings table)
- - favorite/unfavorite a tweet (**create** / **destroy** a row in the favorites table)
- - etc.
+ - A migration file that contains a Ruby script that, when executed, will create a table called "photos" with two columns in it; "caption" and "source".
+ - A Ruby class called `Photo` that will represent this table so that we can interact with it easily.
 
-At the most basic level, for every interaction we want to support, we have make up a URL that will trigger a controller action which performs that interaction.
+Execute the migration with:
 
-Then we need to give the users a way to visit that URL (there's only two ways: either a link or a form submit button which point to that URL).
+```bash
+rails db:migrate
+```
 
-For each web resource, we usually support seven actions (with some exceptions, like Twitter not supporting editing of tweets). **The Golden Seven** actions are:
+You now have a database table!
 
-#### Create
+### Add some data manually
 
- - new_form: displays a blank form to the user
- - create_row: receives info from the new form and inserts a row into the table
+Let's add some rows to it with some Ruby. Jump into `rails console` and do some CRUD with Ruby:
 
-#### Read
+```ruby
+Photo.count
+Photo.first
 
- - index: displays a list of multiple rows
- - show: displays the details of one row
+p = Photo.new
+p.source = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/SQM_GE_289A_Boxcab_Carmelita_-_Reverso.jpg/640px-SQM_GE_289A_Boxcab_Carmelita_-_Reverso.jpg"
+p.caption = "Train"
+p.save
 
-#### Update
+Photo.count
+Photo.first
 
- - edit_form: displays a pre-populated form to the user with existing data
- - update_row: receives info from the edit form and updates a row in the table
+Photo.find(1)
+```
 
-#### Delete
+### Pre-populate the table with more data quickly
 
- - destroy: removes a row from the table
+To save us some time, we've prepared a Ruby script that will repeat the above process 16 times. Run the script with the following command:
 
-Let's get started.
+```bash
+rails db:seed
+```
 
-## The Target
+You can re-run this command whenever you want to add 16 more rows to the table (useful if you, for example, delete all of the rows while testing your delete link).
 
-To start with, we'll keep it simple and manage just one resource: photos. Our goal is to build an app that lets users submit URLs of photos and add captions for them, like this:
+## Implement the Golden Seven
 
-### [This is the target you should aim to build.](https://photogram-golden-seven-target.herokuapp.com/)
+### Stub out all seven RCAVs
 
-Eventually, we'll add the ability to sign up, upload photos, and follow other users, and we'll wind up building Instagram. But for now, anonymous visitors will simply copy-paste the URLs of images that are already on the Internet.
+Let's quickly complete all seven RCAVs. Here are the routes we'll need for the URLs we identified above, with some sensible sounding controller and action names and somewhat silly flexible segment names:
 
-## Setup
+```ruby
+# CREATE
+get("/photos/new", { :controller => "photos", :action => "new_form" })
+get("/create_photo", { :controller => "photos", :action => "create_row" })
 
- 1. Read the instructions completely.
- 1. Fork this repository.
- 1. Clone your fork.
- 1. `cd` in to the application's root folder.
- 1. `bundle install`
- 1. `rails server`
- 1. Open up the code in Atom.
+# READ
+get("/photos", { :controller => "photos", :action => "index" })
+get("/photos/:the_id", { :controller => "photos", :action => "show" })
+
+# UPDATE
+get("/photos/:la_id/edit", { :controller => "photos", :action => "edit_form" })
+get("/update_photo/:le_id", { :controller => "photos", :action => "update_row" })
+
+# DELETE
+get("/delete_photo/:da_id", { :controller => "photos", :action => "destroy_row" })
+```
+
+(Your [RCAV Flowchart](https://guides.firstdraft.com/rcav-flowchart.html) guide will be handy for all RCAV-related portions of this project.)
+
+For each one, complete the RCAV. In the view template, simply add an `<h1>Hi</h1>` to prove that you connected the RCAV dots without any bugs.
 
 ### READ (index, show)
 
 Our first goal will be to allow users to READ photos -- individual details, and a list of all of them.
 
- - We'll have to create a table called `photos` that has two columns in it:
-  - `source` (where we'll store the URL of each photo)
-  - `caption`
- - We'll have to add some rows to this table.
  - We'll have to add two routes:
   - `get("/photos/:id", { :controller => "photos", :action => "show" })`
   - `get("/photos",     { :controller => "photos", :action => "index" })`
@@ -120,7 +189,7 @@ The first step is: let's give the user a form to type some stuff in to. Add the 
 
 This action has a very simple job: draw a blank form in the user's browser for them to type some stuff into.
 
-It's been a while since we've done any forms, but let's shake off the rust and recall our Essential HTML (refer to that repository if you need to) to craft a form for a photo with two inputs: one for the image's URL and one for a caption. Complete the RCAV and add the following HTML in the view:
+It's been a while since we've done any forms, but let's shake off the rust and craft a form for a photo with two inputs: one for the image's URL and one for a caption. Complete the RCAV and add the following HTML in the view:
 
 ```html
 <form action="/create_photo">
@@ -180,15 +249,13 @@ Fortunately, we can very easily pick which URL receives the data from a form: it
 
 Think of the action attribute as being like the `href` attribute of the `<a>` tag. It determines where the user is sent after they click. The only difference between a form and a link is that when the user clicks a form, some extra data comes along for the ride, but either way, the user is sent to a new URL.
 
-Of course, if you click it right now, you'll receive a "NO ROUTE MATCHES" error -- because we haven't set up a route to support `"/create_photo"`. Let's do that:
+Of course, if you click it right now, you'll just see "Hi", since that's all that the action does right now. Let's make it smarter, and process the inputs from the form.
 
 #### create_row
 
 ```ruby
 get("/create_photo", { :controller => "photos", :action => "create_row" })
 ```
-
-Add the action and view for that route. Put some static HTML in the view for now.
 
 **Your next job** is to write some Ruby in the `create` action to:
 
@@ -224,26 +291,14 @@ Does it make sense how that link is being put together?
 
 When I click that link, the photo should be removed and I should be sent back to the index page.
 
-Write a route, action, and view to make that happen. To start you off, here's a route:
-
-```ruby
-get("/delete_photo/:id", { :controller => "photos", :action => "destroy" })
-```
-
 ### UPDATE (edit_form, update_row)
 
 #### edit_form
 
-Under each photo on the index page, there is a link labeled "Edit". The markup for these links look like:
+Under each photo on the index page, there is a link labeled "Edit". The markup for these links should look like:
 
 ```html
 <a href="http://localhost:3000/photos/<%= photo.id %>/edit">Edit</a>
-```
-
-Add a route to support this action:
-
-```ruby
-get("/photos/:id/edit", { :controller => "photos", :action => "edit_form" })
 ```
 
 The job of this action should be to display a form to edit an existing photo, somewhat like the `new_form` action.
