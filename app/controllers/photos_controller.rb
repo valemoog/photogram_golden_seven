@@ -40,7 +40,7 @@ class PhotosController <ApplicationController
 
     my_photo.save
 
-    render("photos/update_row.html.erb")
+    redirect_to("/photos/#{my_photo.id}")
 
   end
 
