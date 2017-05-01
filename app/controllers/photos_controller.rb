@@ -18,7 +18,7 @@ class PhotosController <ApplicationController
     new_photo.caption = cap
     new_photo.save
 
-    redirect_to("/photos/#{new_photo.id}")
+    redirect_to("/photos")
   end
 
   def show
@@ -54,7 +54,13 @@ class PhotosController <ApplicationController
   end
 
   def destroy_row
-    render("photos/destroy_row.html.erb")
+
+    the_id = params[:id]
+    my_photo=Photo.find(the_id)
+
+    my_photo.destroy
+
+    redirect_to("/photos")
 
   end
 
