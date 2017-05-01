@@ -31,11 +31,14 @@ class PhotosController <ApplicationController
   def update_row
 
     the_id = params[:id]
-    @my_photo=Photo.find(the_id)
 
-    @my_photo
+    my_photo=Photo.find(the_id)
 
-    @my_photo.save
+    my_photo.caption = params[:da_caption]
+
+    my_photo.source = params[:da_source]
+
+    my_photo.save
 
     render("photos/update_row.html.erb")
 
