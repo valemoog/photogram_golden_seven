@@ -10,7 +10,8 @@
 </p>
 
 <div>
-<a href="http://localhost:3000/photos/ <% the_photo.id %>/edit"> Edit </a>
-<a href = "http://localhost:3000/delete_photo/<%= the_photo.id%>"> Delete </a>
+<a href="http://localhost:3000/photos/ <%= the_photo.id %>"> Show Details </a>
+<a href="http://localhost:3000/photos/ <%= the_photo.id %>/edit"> Edit </a>
+<a href = "http://localhost:3000/delete_photo/<%= the_photo.id %>"> Delete </a>
 </div>
 <% end %>

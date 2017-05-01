@@ -30,12 +30,21 @@ class PhotosController <ApplicationController
 
   def update_row
 
+    the_id = params[:id]
+    @my_photo=Photo.find(the_id)
+
+    @my_photo
+
+    @my_photo.save
+
     render("photos/update_row.html.erb")
 
   end
 
   def edit_form
 
+    the_id = params[:id]
+    @my_photo=Photo.find(the_id)
 
     render("photos/edit_form.html.erb")
 
